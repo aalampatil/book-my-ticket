@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Register – ChaiCode Cinema</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        font-family: 'DM Sans', sans-serif;
+        background: #07070d;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+      }
+      .login-card {
+        width: 100%;
+        max-width: 420px;
+        background: #0a0a0f;
+        border: 1px solid #1e1e2e;
+        border-radius: 20px;
+        overflow: hidden;
+      }
+      .film-strip {
+        display: flex;
+        height: 28px;
+        background: #111;
+        border-bottom: 1px solid #1e1e2e;
+        overflow: hidden;
+      }
+      .film-strip.bottom { border-top: 1px solid #1e1e2e; border-bottom: none; }
+      .hole {
+        width: 22px;
+        height: 16px;
+        background: #0a0a0f;
+        border-radius: 3px;
+        margin: auto 6px;
+        flex-shrink: 0;
+      }
+      .card-body { padding: 2.5rem 2.5rem 2rem; }
+      .logo-row { display: flex; align-items: center; gap: 10px; margin-bottom: 2rem; }
+      .logo-icon {
+        width: 36px; height: 36px; border-radius: 8px;
+        background: #e8313a; display: flex;
+        align-items: center; justify-content: center;
+      }
+      .logo-icon svg { width: 18px; height: 18px; fill: white; }
+      .brand { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; color: #f1f1f1; letter-spacing: 0.04em; }
+      .brand span { color: #e8313a; }
+      .now-showing {
+        display: inline-block; background: #1a0a0b;
+        border: 1px solid #3a1215; border-radius: 6px;
+        padding: 4px 10px; font-size: 11px; color: #e8313a;
+        letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 10px;
+      }
+      .headline { font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 800; color: #f8f8f8; line-height: 1.2; margin-bottom: 6px; }
+      .sub { font-size: 14px; color: #6b6b7e; margin-bottom: 2rem; }
+      .field { margin-bottom: 1rem; }
+      .field label { display: block; font-size: 12px; font-weight: 500; color: #8888a0; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+      .field input {
+        width: 100%; background: #111118; border: 1px solid #1e1e2e;
+        border-radius: 10px; padding: 13px 16px;
+        font-family: 'DM Sans', sans-serif; font-size: 15px; color: #f1f1f1;
+        outline: none; transition: border-color 0.2s, background 0.2s;
+      }
+      .field input::placeholder { color: #3a3a50; }
+      .field input:focus { border-color: #e8313a; background: #13131c; }
+      .error-msg {
+        background: #1a0a0b; border: 1px solid #3a1215;
+        border-radius: 8px; padding: 10px 14px;
+        font-size: 13px; color: #e8313a; margin-bottom: 1rem;
+      }
+      .btn {
+        width: 100%; margin-top: 1.5rem; padding: 14px;
+        background: #e8313a; border: none; border-radius: 10px;
+        font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700;
+        color: white; cursor: pointer; letter-spacing: 0.03em;
+        transition: background 0.2s, transform 0.1s;
+        display: flex; align-items: center; justify-content: center; gap: 8px;
+      }
+      .btn:hover { background: #c9272f; }
+      .btn:active { transform: scale(0.98); }
+      .divider { display: flex; align-items: center; gap: 12px; margin: 1.5rem 0 1rem; }
+      .divider hr { flex: 1; border: none; border-top: 1px solid #1e1e2e; }
+      .divider span { font-size: 12px; color: #3a3a50; }
+      .footer-text { text-align: center; font-size: 13px; color: #4a4a60; }
+      .footer-text a { color: #e8313a; text-decoration: none; font-weight: 500; }
+      .footer-text a:hover { text-decoration: underline; }
+    </style>
+  </head>
+  <body>
+    <div class="login-card">
+
+      <div class="film-strip">
+        <% for(let i = 0; i < 14; i++) { %>
+          <div class="hole"></div>
+        <% } %>
+      </div>
+
+      <div class="card-body">
+        <div class="logo-row">
+          <div class="logo-icon">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M18 3H6a3 3 0 00-3 3v12a3 3 0 003 3h12a3 3 0 003-3V6a3 3 0 00-3-3zm-9 13V8l7 4-7 4z"/>
+            </svg>
+          </div>
+          <div class="brand">Chai<span>Code</span> Cinema</div>
+        </div>
+
+        <div class="now-showing">Join Us</div>
+        <div class="headline">Create your<br>Account.</div>
+        <div class="sub">Reserve your spot for Dhurandhar & more.</div>
+
+        <% if (locals.error) { %>
+          <div class="error-msg">⚠ <%= error %></div>
+        <% } %>
+
+        <form method="POST" action="/register">
+          <div class="field">
+            <label for="name">Full Name</label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              placeholder="Jassi Kumar"
+              value="<%= locals.name ? name : '' %>"
+              required
+            />
+          </div>
+          <div class="field">
+            <label for="email">Email</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              placeholder="you@example.com"
+              value="<%= locals.email ? email : '' %>"
+              required
+            />
+          </div>
+          <div class="field">
+            <label for="password">Password</label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              placeholder="••••••••"
+              required
+            />
+          </div>
+          <button type="submit" class="btn">Claim your seat &nbsp;→</button>
+        </form>
+
+        <div class="divider"><hr><span>already a member?</span><hr></div>
+        <div class="footer-text">
+          Already have an account? <a href="/login">Login</a>
+        </div>
+      </div>
+
+      <div class="film-strip bottom">
+        <% for(let i = 0; i < 14; i++) { %>
+          <div class="hole"></div>
+        <% } %>
+      </div>
+
+    </div>
+  </body>
+</html>
