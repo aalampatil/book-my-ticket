@@ -119,14 +119,14 @@
           <div class="error-msg">⚠ <%= error %></div>
         <% } %>
 
-        <form method="POST" action="/register">
+        <form method="POST" action="http://localhost:8080/register">
           <div class="field">
             <label for="name">Full Name</label>
             <input
               type="text"
               id="name"
               name="name"
-              placeholder="Jassi Kumar"
+              placeholder="Jassi "
               value="<%= locals.name ? name : '' %>"
               required
             />

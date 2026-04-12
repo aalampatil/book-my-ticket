@@ -1,0 +1,15 @@
+{
+  "figUnreleased.updatePathsOnFileRename": "always",
+  "sqltools.connections": [
+    {
+      "ssh": "Disabled",
+      "previewLimit": 50,
+      "server": "localhost",
+      "port": 5433,
+      "driver": "PostgreSQL",
+      "database": "sql_class_2_db",
+      "username": "postgres",
+      "name": "assignment_conn"
+    }
+  ]
+}
