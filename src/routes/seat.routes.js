@@ -1,15 +1,22 @@
 import { Router } from "express";
 import { pool } from "../index.js";
+import { restrictToAuthenticated } from "../utils/auth.middleware.js";
 
 export const seatRouter = Router();
 
-seatRouter.get("/seats", async (req, res) => {
-  const result = await pool.query("select * from seats");
-  console.log(result);
-  res.send(result.rows);
+seatRouter.get("/seats", restrictToAuthenticated(), async (req, res) => {
+  try {
+    const result = await pool.query("SELECT * FROM seats");
+    // console.log(result);
+    res.json(result.rows);
+  } catch (err) {
+    console.error("ERROR in /seats:", err);
+    res.status(500).json({ error: "Failed to fetch seats" });
+  }
+
 });
 
-seatRouter.put("/:id/:name", async (req, res) => {
+seatRouter.put("/:id/:name", restrictToAuthenticated(), async (req, res) => {
   try {
     const id = req.params.id;
     const name = req.params.name;

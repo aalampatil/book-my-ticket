@@ -57,7 +57,6 @@ userRouter.post('/register', async (req, res) => {
 
 userRouter.post('/login', async (req, res) => {
   const { email, password } = req.body;
-  // your auth logic...
 
   try {
     const result = await pool.query(
@@ -85,7 +84,13 @@ userRouter.post('/login', async (req, res) => {
 
     const token = createUserToken(user.email);
 
+    res.cookie("token", token, {
+      httpOnly: true,     // 🔐 prevents JS access
+      secure: false,      // true in production (HTTPS)
+      maxAge: 24 * 60 * 60 * 1000 // 1 day
+    });
     res.redirect("/")
+
 
   } catch (err) {
     console.log(err);

@@ -71,7 +71,11 @@
       async function run() {
         const tbl = document.getElementById("tbl");
         const res = await fetch("http://localhost:8080/seats");
-        console.log(res);
+        if (res.redirected) {
+          window.location.href = res.url; // go to login page
+          return;
+        }
+        // console.log(res);
         const resarray = await res.json();
         const j = resarray.sort((a, b) => a.id - b.id);
         let tr;

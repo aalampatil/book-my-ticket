@@ -4,9 +4,10 @@ import pg from "pg";
 import { dirname } from "path";
 import { fileURLToPath } from "url";
 import cors from "cors";
-import { authenticationMiddleware } from "./utils/auth.middleware.js";
+import { authenticationMiddleware, restrictToAuthenticated } from "./utils/auth.middleware.js";
 import { userRouter } from "./routes/user.routes.js";
 import { seatRouter } from "./routes/seat.routes.js";
+import cookieParser from "cookie-parser";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -29,6 +30,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"))
 app.set("view engine", "ejs");
 app.use(cors());
+app.use(cookieParser())
 app.use(authenticationMiddleware())
 
 app.get("/", (req, res) => {
