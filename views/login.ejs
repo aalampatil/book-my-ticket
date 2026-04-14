@@ -24,6 +24,11 @@
         border: 1px solid #1e1e2e;
         border-radius: 20px;
         overflow: hidden;
+        animation: slideUp 0.4s ease;
+      }
+      @keyframes slideUp {
+        from { opacity: 0; transform: translateY(16px); }
+        to   { opacity: 1; transform: translateY(0); }
       }
       .film-strip {
         display: flex;
@@ -123,6 +128,9 @@
         font-size: 13px;
         color: #e8313a;
         margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
       }
       .btn {
         width: 100%;
@@ -145,6 +153,7 @@
       }
       .btn:hover { background: #c9272f; }
       .btn:active { transform: scale(0.98); }
+      .btn:disabled { opacity: 0.6; cursor: not-allowed; }
       .divider {
         display: flex;
         align-items: center;
@@ -160,16 +169,11 @@
   </head>
   <body>
     <div class="login-card">
-
-      <!-- Top film strip -->
       <div class="film-strip">
-        <% for(let i = 0; i < 14; i++) { %>
-          <div class="hole"></div>
-        <% } %>
+        <% for(let i = 0; i < 14; i++) { %><div class="hole"></div><% } %>
       </div>
 
       <div class="card-body">
-        <!-- Logo -->
         <div class="logo-row">
           <div class="logo-icon">
             <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -183,13 +187,11 @@
         <div class="headline">Welcome<br>Back.</div>
         <div class="sub">Sign in to book your seat for Dhurandhar.</div>
 
-        <!-- Error message (conditionally rendered) -->
         <% if (locals.error) { %>
           <div class="error-msg">⚠ <%= error %></div>
         <% } %>
 
-        <!-- Login form -->
-        <form method="POST" action="/login">
+        <form method="POST" action="/login" id="loginForm">
           <div class="field">
             <label for="email">Email</label>
             <input
@@ -199,6 +201,7 @@
               placeholder="you@example.com"
               value="<%= locals.email ? email : '' %>"
               required
+              autocomplete="email"
             />
           </div>
           <div class="field">
@@ -209,9 +212,10 @@
               name="password"
               placeholder="••••••••"
               required
+              autocomplete="current-password"
             />
           </div>
-          <button type="submit" class="btn">
+          <button type="submit" class="btn" id="submitBtn">
             Enter the cinema &nbsp;→
           </button>
         </form>
@@ -222,13 +226,17 @@
         </div>
       </div>
 
-      <!-- Bottom film strip -->
       <div class="film-strip bottom">
-        <% for(let i = 0; i < 14; i++) { %>
-          <div class="hole"></div>
-        <% } %>
+        <% for(let i = 0; i < 14; i++) { %><div class="hole"></div><% } %>
       </div>
-
     </div>
+
+    <script>
+      document.getElementById('loginForm').addEventListener('submit', () => {
+        const btn = document.getElementById('submitBtn');
+        btn.disabled = true;
+        btn.textContent = 'Entering…';
+      });
+    </script>
   </body>
 </html>

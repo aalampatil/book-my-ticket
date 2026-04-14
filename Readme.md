@@ -144,3 +144,130 @@ BOOK-MY-TICKET-MAIN/
 ## 📄 License
 
 ISC
+
+# 🎬 ChaiCode Cinema — Backend
+
+Production-style seat booking backend built with **Express**, **PostgreSQL**, **JWT**, and **EJS**.
+
+---
+
+## Features
+
+| Feature              | Details                                                                           |
+| -------------------- | --------------------------------------------------------------------------------- |
+| User Registration    | Email uniqueness check, bcrypt hashing (cost 12)                                  |
+| User Login           | Cookie-based JWT auth (`httpOnly`, `sameSite: lax`)                               |
+| Auth Middleware      | Soft (`authenticationMiddleware`) + Hard (`restrictToAuthenticated`)              |
+| Seat Listing         | Protected GET `/seats` — returns all seats sorted by id                           |
+| Seat Booking         | Protected PUT `/:id/:name` with row-level locking (`FOR UPDATE`) to prevent races |
+| Duplicate prevention | Transactional check — returns 409 if already booked                               |
+| User association     | Seats store `booked_by` (email) and `booked_at` (timestamp)                       |
+| My bookings          | GET `/seats/my` — filtered by logged-in user's email                              |
+| Current user API     | GET `/me` — returns `{ email }` for the logged-in user                            |
+| Logout               | GET `/logout` — clears cookie and redirects to login                              |
+| 401 vs Redirect      | API calls get JSON 401; browser navigations get 302 to `/login`                   |
+
+---
+
+## Project Structure
+
+```
+chaicode-cinema/
+├── index.js                   # App entry point
+├── package.json
+├── .env.example               # Copy to .env and fill in values
+├── db/
+│   └── setup.sql              # Schema + seed + migration
+├── routes/
+│   ├── user.routes.js         # /register, /login, /me
+│   └── seat.routes.js         # /seats, /:id/:name, /seats/my
+├── utils/
+│   ├── auth.middleware.js     # authenticationMiddleware, restrictToAuthenticated
+│   └── jwt-token.js           # createUserToken, verifyUserToken
+├── views/
+│   ├── login.ejs
+│   └── register.ejs
+└── public/
+    └── index.html             # Seat booking UI
+```
+
+---
+
+## Setup
+
+### 1. Install dependencies
+
+```bash
+npm install
+```
+
+### 2. Configure environment
+
+```bash
+cp .env.example .env
+# Edit .env with your DB credentials and a strong JWT_SECRET
+```
+
+### 3. Set up the database
+
+```bash
+# Create the DB if it doesn't exist
+createdb sql_class_2_db
+
+# Run the schema setup
+npm run db:setup
+# or: psql -d sql_class_2_db -f db/setup.sql
+```
+
+### 4. Start the server
+
+```bash
+# Development (auto-restart on change)
+npm run dev
+
+# Production
+npm start
+```
+
+---
+
+## API Reference
+
+### Auth
+
+| Method | Path        | Auth     | Description                |
+| ------ | ----------- | -------- | -------------------------- |
+| GET    | `/register` | Public   | Register page              |
+| POST   | `/register` | Public   | Create account, auto-login |
+| GET    | `/login`    | Public   | Login page                 |
+| POST   | `/login`    | Public   | Login, sets cookie         |
+| GET    | `/logout`   | Any      | Clears cookie, redirects   |
+| GET    | `/me`       | Required | Returns `{ email }`        |
+
+### Seats
+
+| Method | Path         | Auth     | Description             |
+| ------ | ------------ | -------- | ----------------------- |
+| GET    | `/seats`     | Required | All seats ordered by id |
+| PUT    | `/:id/:name` | Required | Book seat (race-safe)   |
+| GET    | `/seats/my`  | Required | Current user's bookings |
+
+---
+
+## Key Design Decisions
+
+### Why `FOR UPDATE`?
+
+Row-level locking ensures that if two users click the same seat simultaneously, only one transaction succeeds. The other sees `rowCount = 0` on the locked-then-updated row and returns a 409.
+
+### Why soft + hard middleware?
+
+`authenticationMiddleware()` runs on every request and populates `req.user` if the token is valid — without blocking. `restrictToAuthenticated()` is applied per-route. This separation means you can easily add public pages later without restructuring.
+
+### Why redirect vs 401?
+
+The frontend sends `Accept: application/json` on fetch calls, so the middleware detects this and returns a JSON 401. Browser navigations (no `Accept: application/json`) get a 302 redirect to `/login`, which is the correct UX.
+
+### bcrypt cost factor 12
+
+Cost 10 is Express default and commonly used. Cost 12 adds ~4× more hashing time (still < 1s) — a good tradeoff for production, making brute-force attacks significantly slower.

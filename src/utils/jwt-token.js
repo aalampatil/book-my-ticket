@@ -1,13 +1,26 @@
 import jwt from "jsonwebtoken";
+
+const SECRET = process.env.JWT_SECRET || "chaicode-cinema-super-secret-change-in-prod";
+const EXPIRES_IN = "24h";
+
+/**
+ * Creates a signed JWT for the given email.
+ * @param {string} email
+ * @returns {string} signed token
+ */
 export function createUserToken(email) {
-  const token = jwt.sign(email, process.env.JWT_SECRET);
-  return token;
+  return jwt.sign({ email }, SECRET, { expiresIn: EXPIRES_IN });
 }
-export function VerifyUserToken(token) {
+
+/**
+ * Verifies and decodes a JWT.
+ * @param {string} token
+ * @returns {{ email: string } | null} decoded payload, or null if invalid
+ */
+export function verifyUserToken(token) {
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    return decoded;
-  } catch (error) {
+    return jwt.verify(token, SECRET);
+  } catch {
     return null;
   }
 }

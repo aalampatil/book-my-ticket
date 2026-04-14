@@ -1,3 +1,8 @@
+-- ─────────────────────────────────────────────────────────────
+-- ChaiCode Cinema — Database Setup
+-- Run once to initialise or migrate your schema.
+-- ─────────────────────────────────────────────────────────────
+-- Users table
 CREATE TABLE IF NOT EXISTS users (
   id SERIAL PRIMARY KEY,
   first_name VARCHAR(100) NOT NULL,

@@ -24,6 +24,11 @@
         border: 1px solid #1e1e2e;
         border-radius: 20px;
         overflow: hidden;
+        animation: slideUp 0.4s ease;
+      }
+      @keyframes slideUp {
+        from { opacity: 0; transform: translateY(16px); }
+        to   { opacity: 1; transform: translateY(0); }
       }
       .film-strip {
         display: flex;
@@ -69,6 +74,11 @@
       }
       .field input::placeholder { color: #3a3a50; }
       .field input:focus { border-color: #e8313a; background: #13131c; }
+      .password-hint {
+        font-size: 11px;
+        color: #3a3a50;
+        margin-top: 4px;
+      }
       .error-msg {
         background: #1a0a0b; border: 1px solid #3a1215;
         border-radius: 8px; padding: 10px 14px;
@@ -84,6 +94,7 @@
       }
       .btn:hover { background: #c9272f; }
       .btn:active { transform: scale(0.98); }
+      .btn:disabled { opacity: 0.6; cursor: not-allowed; }
       .divider { display: flex; align-items: center; gap: 12px; margin: 1.5rem 0 1rem; }
       .divider hr { flex: 1; border: none; border-top: 1px solid #1e1e2e; }
       .divider span { font-size: 12px; color: #3a3a50; }
@@ -94,11 +105,8 @@
   </head>
   <body>
     <div class="login-card">
-
       <div class="film-strip">
-        <% for(let i = 0; i < 14; i++) { %>
-          <div class="hole"></div>
-        <% } %>
+        <% for(let i = 0; i < 14; i++) { %><div class="hole"></div><% } %>
       </div>
 
       <div class="card-body">
@@ -113,22 +121,23 @@
 
         <div class="now-showing">Join Us</div>
         <div class="headline">Create your<br>Account.</div>
-        <div class="sub">Reserve your spot for Dhurandhar & more.</div>
+        <div class="sub">Reserve your spot for Dhurandhar &amp; more.</div>
 
         <% if (locals.error) { %>
           <div class="error-msg">⚠ <%= error %></div>
         <% } %>
 
-        <form method="POST" action="http://localhost:8080/register">
+        <form method="POST" action="/register" id="registerForm">
           <div class="field">
             <label for="name">Full Name</label>
             <input
               type="text"
               id="name"
               name="name"
-              placeholder="Jassi "
+              placeholder="Your name"
               value="<%= locals.name ? name : '' %>"
               required
+              autocomplete="name"
             />
           </div>
           <div class="field">
@@ -140,6 +149,7 @@
               placeholder="you@example.com"
               value="<%= locals.email ? email : '' %>"
               required
+              autocomplete="email"
             />
           </div>
           <div class="field">
@@ -150,9 +160,12 @@
               name="password"
               placeholder="••••••••"
               required
+              minlength="6"
+              autocomplete="new-password"
             />
+            <div class="password-hint">Minimum 6 characters</div>
           </div>
-          <button type="submit" class="btn">Claim your seat &nbsp;→</button>
+          <button type="submit" class="btn" id="submitBtn">Claim your seat &nbsp;→</button>
         </form>
 
         <div class="divider"><hr><span>already a member?</span><hr></div>
@@ -162,11 +175,16 @@
       </div>
 
       <div class="film-strip bottom">
-        <% for(let i = 0; i < 14; i++) { %>
-          <div class="hole"></div>
-        <% } %>
+        <% for(let i = 0; i < 14; i++) { %><div class="hole"></div><% } %>
       </div>
-
     </div>
+
+    <script>
+      document.getElementById('registerForm').addEventListener('submit', () => {
+        const btn = document.getElementById('submitBtn');
+        btn.disabled = true;
+        btn.textContent = 'Creating account…';
+      });
+    </script>
   </body>
 </html>

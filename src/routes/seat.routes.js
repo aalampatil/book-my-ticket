@@ -4,41 +4,87 @@ import { restrictToAuthenticated } from "../utils/auth.middleware.js";
 
 export const seatRouter = Router();
 
+// ─── GET /seats — list all seats ───────────────────────────────────────────────
 seatRouter.get("/seats", restrictToAuthenticated(), async (req, res) => {
   try {
-    const result = await pool.query("SELECT * FROM seats");
-    // console.log(result);
+    const result = await pool.query(
+      "SELECT id, isbooked, name FROM seats ORDER BY id"
+    );
     res.json(result.rows);
   } catch (err) {
-    console.error("ERROR in /seats:", err);
+    console.error("Error fetching seats:", err);
     res.status(500).json({ error: "Failed to fetch seats" });
   }
-
 });
 
+// ─── PUT /:id/:name — book a seat ─────────────────────────────────────────────
+// Associates the seat with the currently authenticated user's email as well.
 seatRouter.put("/:id/:name", restrictToAuthenticated(), async (req, res) => {
+  const seatId = parseInt(req.params.id, 10);
+  const name = req.params.name?.trim();
+
+  if (!Number.isInteger(seatId) || seatId < 1) {
+    return res.status(400).json({ error: "Invalid seat ID" });
+  }
+
+  if (!name) {
+    return res.status(400).json({ error: "Name is required" });
+  }
+
+  const client = await pool.connect();
   try {
-    const id = req.params.id;
-    const name = req.params.name;
+    await client.query("BEGIN");
 
-    const conn = await pool.connect();
+    // Lock the row to prevent race conditions
+    const check = await client.query(
+      "SELECT id, isbooked FROM seats WHERE id = $1 FOR UPDATE",
+      [seatId]
+    );
 
-    await conn.query("BEGIN");
-
-    const sql = "SELECT * FROM seats where id = $1 and isbooked = 0 FOR UPDATE";
-    const result = await conn.query(sql, [id]);
-    if (result.rowCount === 0) {
-      res.send({ error: "Seat already booked" });
-      return;
+    if (check.rowCount === 0) {
+      await client.query("ROLLBACK");
+      return res.status(404).json({ error: "Seat not found" });
     }
 
-    const sqlU = "update seats set isbooked = 1, name = $2 where id = $1";
-    const updateResult = await conn.query(sqlU, [id, name]);
-    await conn.query("COMMIT");
-    conn.release();
-    res.send(updateResult);
-  } catch (ex) {
-    console.log(ex);
-    res.send(500);
+    if (check.rows[0].isbooked) {
+      await client.query("ROLLBACK");
+      return res.status(409).json({ error: "Seat already booked" });
+    }
+
+    // Book the seat — also store the booking user's email for auditing
+    await client.query(
+      "UPDATE seats SET isbooked = 1, name = $1, booked_by = $2 WHERE id = $3",
+      [name, req.user.email, seatId]
+    );
+
+    await client.query("COMMIT");
+
+    res.json({
+      success: true,
+      message: `Seat ${seatId} booked for ${name}`,
+      seatId,
+      name,
+      bookedBy: req.user.email,
+    });
+  } catch (err) {
+    await client.query("ROLLBACK");
+    console.error("Error booking seat:", err);
+    res.status(500).json({ error: "Failed to book seat" });
+  } finally {
+    client.release();
   }
-})
+});
+
+// ─── GET /seats/my — seats booked by current user ─────────────────────────────
+seatRouter.get("/seats/my", restrictToAuthenticated(), async (req, res) => {
+  try {
+    const result = await pool.query(
+      "SELECT id, name FROM seats WHERE isbooked = 1 AND booked_by = $1 ORDER BY id",
+      [req.user.email]
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Error fetching user seats:", err);
+    res.status(500).json({ error: "Failed to fetch your bookings" });
+  }
+});
